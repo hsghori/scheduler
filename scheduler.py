@@ -1,4 +1,3 @@
-import numpy as np
 from datetime import date, timedelta
 import sys
 import random as rand
@@ -119,7 +118,6 @@ def create_schedule(ras, start='2/16/2018', end='5/18/2018', breaks=None, name='
 		while attempts < num_ras:
 			roll = rand.randint(0, N - 1)
 			selected = lst[roll]
-			# valid_roll = selected RA has weekdays left and day is not a conflict and date is not a conflict
 			valid = day not in selected.unv_regular and curr not in selected.unv_irregular and schedule.get(curr - dayiter, 'None') != selected.name
 			if valid:
 				schedule[curr] = selected.name
@@ -135,8 +133,8 @@ def create_schedule(ras, start='2/16/2018', end='5/18/2018', breaks=None, name='
 		tracker[nm][ind] -= 1
 	for curr in duty_range:
 		outfile.write('%s : %s : %s\n' % (inverse[curr.weekday()], str(curr), schedule[curr]))
-		# print '%s : %s : %s\n' % (inverse[curr.weekday()], str(curr), schedule[curr])
 	outfile.close()
+	print 'Results'
 	for ra in ras:
 		curr = tracker[ra.name]
 		print '%s : weekdays %d, weekends %d' % (ra.name, weekdays_per - curr[0], weekends_per - curr[1])
