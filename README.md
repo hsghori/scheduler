@@ -10,6 +10,7 @@ To use this program:
     person1 | day_of_week1, day_of_week2, ... | date1, date2, ...
     day_of_weekN is the day of the week when person1 can't do duty (ie monday, tuesday, etc)
     dateN is a specific date where person1 can't do duty (format MM/DD/YYYY) (ie 01/10/2018)
+    
     Example:
     ```
     John | Monday | 02/14/2018, 03/01/2018, 05/01/2018
