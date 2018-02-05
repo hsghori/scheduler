@@ -1,7 +1,8 @@
 # jhu-reslife-duty-scheduler
 
 ### Installation 
-To use this program you need to have Python 2.7+ installed: https://www.python.org/downloads/
+To use this program you need to have Python 2.7+ installed: https://www.python.org/downloads/.
+You need to clone the repo (if you know what that means you know how to do it 😀) or download the zip. 
 
 ### Usage
 To use this program:
