@@ -23,10 +23,10 @@ To use this program:
     ```
     The program should output the total number of weekday and weekend assignments for each person and any days where a conflict couldn't be easily resolved.  
 
-You can also specify the name of the output file (by default is schedule\_out.txt) via:
-```
-$ python scheduler.py someFile.txt someOutput.txt
-```
+	You can also specify the name of the output file (by default is schedule\_out.txt) via:
+	```
+	$ python scheduler.py someFile.txt someOutput.txt
+	```
 
 4. If the program ran with no errors a file (schedule\_out.txt) should have been generated with a randomized duty schedule based on the restrictions given in someFile. 
 
