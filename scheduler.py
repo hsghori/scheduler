@@ -1,7 +1,12 @@
 from datetime import date, timedelta
 import random as rand
 import math
-import argparse
+try:
+	import argparse
+except ImportError:
+	import pip
+	pip.main(['install', 'argparse'])
+	import argparse
 
 days = {
         'monday': 0, 
@@ -140,19 +145,22 @@ def create_schedule(ras, outfile, start='2/16/2018', end='5/18/2018', breaks=Non
         curr = tracker[ra.name]
         print '%s : weekdays %d, weekends %d' % (ra.name, weekdays_per - curr[0], weekends_per - curr[1])
 
-def run(fn, outfile):
-    ras = parse_file(fn)
-    create_schedule(ras, outfile)
+def run(infile, outfile, start_date, end_date):
+    ras = parse_file(infile)
+    create_schedule(ras, outfile, start=start_date, end=end_date)
     print('Finished schedule has been output to %s' % outfile.name)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ResLife duty scheduler',
              prog='scheduler.py')
-    parser.add_argument('infile', type=argparse.FileType('r'),
-                        help='Enter filename of preference file. \
-                        Example: McCoy.txt')
-    parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'),
+    parser.add_argument('-i', '--infile', type=argparse.FileType('r'), required=True,
+                        help='Enter filename of preference file. Example: mccoy.txt')
+    parser.add_argument('-o', '--outfile', nargs='?', type=argparse.FileType('w'),
                         default='schedule_out.txt', help='Enter name of \
                         preferred output file. Default is schedule_out.txt')
+    parser.add_argument('-s', '--start-date', default='2/16/2018', 
+    					help='Enter starting date in MM/DD/YYYY format.')
+    parser.add_argument('-e', '--end-date', default='5/17/2018', 
+    					help='Enter ending date in MM/DD/YYYY format.')
     args = parser.parse_args()
-    run(args.infile, args.outfile)
+    run(args.infile, args.outfile, args.start_date, args.end_date)
