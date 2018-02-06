@@ -94,8 +94,8 @@ def parse_file(infile):
 
 
 
-def create_schedule(ras, outfile, start='2/16/2018', end='5/18/2018', breaks=None):
-    spring_break = create_date_range('3/17/2018', '3/24/2018')[0]
+def create_schedule(ras, outfile, start='2/16/2018', end='5/18/2018', break_start='3/17/2018', break_end='3/24/2018'):
+    spring_break = create_date_range(break_start, break_end)[0]
     num_ras = len(ras)
     duty_range, num_weekdays, num_weekends = create_date_range(start, end, spring_break)
     weekdays_per = int(math.ceil(num_weekdays / float(num_ras)))
@@ -162,5 +162,9 @@ if __name__ == '__main__':
     					help='Enter starting date in MM/DD/YYYY format.')
     parser.add_argument('-e', '--end-date', default='5/17/2018', 
     					help='Enter ending date in MM/DD/YYYY format.')
+    parser.add_argument('-bs', '--break-start-date', default='3/17/2018', 
+    					help='Enter the starting date of a major break (Thanksgiving / Easter) in MM/DD/YYYY format.')
+    parser.add_argument('-be', '--break-end-date', default='3/24/2018', 
+    					help='Enter the ending date of a major break (Thanksgiving / Easter) in MM/DD/YYYY format.')
     args = parser.parse_args()
     run(args.infile, args.outfile, args.start_date, args.end_date)
