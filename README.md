@@ -36,10 +36,18 @@ To use this program:
 	```
 
 	If you need help with the commands you can type:
-
 	```
 	$ python scheduler.py --help
 	```
+	
+	__Note__: Each of the commands above has a less verbose version. In order they are:
+	```Bash
+	$ python scheduler.py -i someFile.txt
+	$ python scheduler.py -i someFile.txt -o someOutput.txt
+	$ python scheduler.py -i someFile.txt -o someOutput.txt -s 8/25/2018 -e 12/21/2018 -bs 11/17/2018 -be 11/25/2018
+	$ python scheduler.py -h
+	```
+
 
 4. If the program ran with no errors a file (schedule\_out.txt) should have been generated with a randomized duty schedule based on the restrictions given in someFile. 
 
