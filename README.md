@@ -18,35 +18,31 @@ To use this program:
     ```
 2. Save the input file as a text file (someFile.txt) in the same place that you've cloned / downloaded this repo.
 3. Open your terminal and navigate to the place where you've cloned / downloaded this repo and type:
-```Bash
+	```
     $ python scheduler.py --infile someFile.txt
-```
+	```
     The program should output the total number of weekday and weekend assignments for each person and any days where a conflict couldn't be easily resolved.  
-
 	You can also specify the name of the output file (by default is schedule\_out.txt) via:
-```Bash
+	```Bash
 	$ python scheduler.py --infile someFile.txt --outfile someOutput.txt
-```
-
+	```
 	__If you're using this tool past Spring 2018 you can enter new start and end dates both for the semester and for major breaks (Thanksgiving / Spring)__
 
 	For example, the command to generate a schedule for Fall 2018 may look like:
-```Bash
+	```Bash
 	$ python scheduler.py --infile someFile.txt --outfile someOutput.txt --start-date 8/25/2018 --end-date 12/21/2018 --break-start-date 11/17/2018 --break-end-date 11/25/2018
-```
-
+	```
 	If you need help with the commands you can type:
-```Bash
+	```Bash
 	$ python scheduler.py --help
-```
+	```
 	__Note__: Each of the commands above has a less verbose version. In order they are:
-```Bash
+	```Bash
 	$ python scheduler.py -i someFile.txt
 	$ python scheduler.py -i someFile.txt -o someOutput.txt
 	$ python scheduler.py -i someFile.txt -o someOutput.txt -s 8/25/2018 -e 12/21/2018 -bs 11/17/2018 -be 11/25/2018
 	$ python scheduler.py -h
-```
-
+	```
 4. If the program ran with no errors a file (schedule\_out.txt) should have been generated with a randomized duty schedule based on the restrictions given in someFile. 
 
 ### Issues or Updates
