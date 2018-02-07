@@ -39,7 +39,6 @@ To use this program:
 ```Bash
 	$ python scheduler.py --help
 ```
-
 	__Note__: Each of the commands above has a less verbose version. In order they are:
 ```Bash
 	$ python scheduler.py -i someFile.txt
