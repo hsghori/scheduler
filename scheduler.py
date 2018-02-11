@@ -313,7 +313,29 @@ def commit_sched(sched, tag='', calID=''):
                 elif cont.lower() == 'n':
                     sys.exit()
 
-def create_sched(infile, outfile, start_date, end_date):
+def run_commit(infile, staff):
+    choose = raw_input('You\'ve entered commit mode which allows you to upload a generated schedule \
+               to Google Calendar. For this to work properly you need to have a Google Calender \
+               API key (client_secret.json), a Google account, and an editable Google Calendar \
+               with a Calendar ID.\nIf you don\'t meet one or more of those criteria, enter N to \
+               quit. Otherwise enter Y to continue.\n-> ')
+    choose = choose.lower()
+    while choose != 'y' or choose != 'n':
+        choose = raw_input('Enter Y to continue or N to quit -> ').lower()
+    if choose == 'n':
+        sys.exit()
+    # assume that infile is the schedule file
+    sched = parse_sched_file(infile)
+    print(sched)
+    while True:
+       choice = raw_input('Are you sure you want to commit this schedule? (Y/N) -> ')
+       if (choice.lower() == 'y'):
+           commit_sched(sched, tag=flags.staff)
+           return
+       elif (choice.lower() == 'n'):
+           return
+
+def run_create(infile, outfile, start_date, end_date):
     '''
      Creates a schedule based on data in infile and outptus to outfile. 
      Params:
@@ -354,25 +376,6 @@ if __name__ == '__main__':
                         help='The google calendar id - commit mode only')
     flags = parser.parse_args()
     if flags.commit:
-        choose = raw_input('You\'ve entered commit mode which allows you to upload a generated schedule \
-               to Google Calendar. For this to work properly you need to have a Google Calender \
-               API key (client_secret.json), a Google account, and an editable Google Calendar \
-               with a Calendar ID.\nIf you don\'t meet one or more of those criteria, enter N to \
-               quit. Otherwise enter Y to continue.\n-> ')
-        choose = choose.lower()
-        while choose != 'y' or choose != 'n':
-            choose = raw_input('Enter Y to continue or N to quit -> ').lower()
-        if choose == 'n':
-            sys.exit()
-        # assume that infile is the schedule file
-        sched = parse_sched_file(flags.infile)
-        print(sched)
-        while True:
-           choice = raw_input('Are you sure you want to commit this schedule? (Y/N) -> ')
-           if (choice.lower() == 'y'):
-               commit_sched(sched, tag=flags.staff)
-               break;
-           elif (choice.lower() == 'n'):
-               break;
+        run_commit(flags.inflie, flags.staff)
     else:
-        run_cl(flags.infile, flags.outfile, flags.start_date, flags.end_date)
+        run_create(flags.infile, flags.outfile, flags.start_date, flags.end_date)
