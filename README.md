@@ -1,5 +1,7 @@
 # jhu-reslife-duty-scheduler
-
+This program is designed to facilitate duty scheduling for JHU Reslife. If you want to use it for some other purpose feel free. Feel free to use and modify this program as you see fit. 
+This readme is written for people with little experience with the terminal. 
+ 
 ### Installation 
 To use this program you need to have Python 2.7+ installed: https://www.python.org/downloads/.
 You also need to clone or download this repo. 
@@ -44,6 +46,23 @@ To use this program:
 	$ python scheduler.py -h
 	```
 4. If the program ran with no errors a file (schedule\_out.txt) should have been generated with a randomized duty schedule based on the restrictions given in someFile. 
+
+### Google Calendar Support 
+Google calendar support is basically ready - you just need to download your own API key. (Eventually I'll try to package this so you don't have to do that, but as of now this is the best I can do.). 
+Follow the steps here: https://developers.google.com/google-apps/calendar/quickstart/python to get your own Google Calendar API key. Make sure you move the client.json file to the same folder as scheduler.py. 
+Once you've generated a schedule (see above) you can commit it to google calendar using:
+```Bash
+	$ python scheduler.py --commit --infile schedule_file.txt 
+```
+Or
+```Bash
+	$ python scheduler.py -c -i schedule_file.txt
+```
+The "commit" (-c) flag turns on "commit mode". There are a few other flags you can use in commit mode. Run:
+```Bash 
+	$ python scheduler.py -h 
+```
+for more detailed information. 
 
 ### Issues or Updates
 If you spot some kind of bug you can approach me directly or open an issue on github. 
