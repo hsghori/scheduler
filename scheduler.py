@@ -3,6 +3,7 @@ from datetime import date, timedelta
 import random as rand
 import math
 import os
+import sys
 try:
     import httplib2
     from apiclient import discovery
@@ -52,11 +53,10 @@ dayiter = timedelta(1)
 class RA:
     '''
      Class to represent a single RA.
-
      Params:
-     name          -> The RA's name
-     unv_regular   -> The restricted days of the week
-     unv_irregular -> the restricted specific dates
+         name -> The RA's name
+         unv_regular -> The restricted days of the week
+         unv_irregular -> the restricted specific dates
     '''
 
     def __init__(self, name='', unv_regular=set(), unv_irregular=set()):
@@ -70,10 +70,9 @@ class RA:
 class InvalidDateRangeException(Exception):
     '''
      Exception that represents invalid date ranges. 
-
      Params:
-     date1 -> the start date
-     date2 -> the end date
+         date1 -> the start date
+         date2 -> the end date
     '''
 
     def __init__(self, date1, date2):
@@ -86,36 +85,61 @@ class InvalidDateRangeException(Exception):
 class InvalidFileFormatException(Exception):
     '''
      Exception that represents invalid input file. 
+     Params:
+        fn -> the filename
     '''
 
+    def __init__(self, fn):
+        self.fn = fn
+
     def __str__(self):
-        return 'Input file format is invalid.'
+        return '%s - file format is invalid.' % (self.fn)
 
 def get_date_obj(s):
     '''
      Returns a date object based on an input string.
      Params:
-     s -> a string of the form m/d/yyyy, mm/dd/yyyy, or mm/dd/yy
+        s -> a string of the form m/d/yyyy, mm/dd/yyyy, or mm/dd/yy
     '''
     parts = s.split('/')
     if len(parts[2]) == 2:
         parts[2] = '20' + parts[2]
     return date(int(parts[2]), int(parts[0]), int(parts[1]))
 
+def create_gcal_even(name, date, tag=''):
+    '''
+     Returns a dict event based on the given data. 
+     Params:
+        name -> the name of hte event 
+        date -> a string representation of the date 
+        tag -> an optional tag to prepend to the event title. 
+     Returns:
+        a dict event based on the Google Calendar API
+    '''
+    tag = tag + ': ' if tag != '' and tag != None else ''
+    event = 
+        {
+            'summary': tag + name,
+            'start': {
+                'date': date
+            },
+            'end': {
+                'date': date
+            }
+        }
+    return event
 
 def create_date_range(begin_str, end_str, exclude=set()):
     '''
      Creates a list of dates from begin to end excluding the dates in the exclude list.
-
      Params:
-     begin_str -> a string representing the beginning of the date range 
-     end_str   -> a string representing the end of the date range
-     exclude   -> a set of dates to exclude from the date range.
-     
+         begin_str -> a string representing the beginning of the date range 
+         end_str -> a string representing the end of the date range
+         exclude -> a set of dates to exclude from the date range.
      Returns:
-     ret      -> a list object containing all dates in the desired range
-     weekdays -> the number of weekdays in the range
-     weekends -> the number of weekends in the range
+         ret -> a list object containing all dates in the desired range
+         weekdays -> the number of weekdays in the range
+         weekends -> the number of weekends in the range
     '''
     curr = get_date_obj(begin_str)
     end = get_date_obj(end_str)
@@ -136,12 +160,10 @@ def create_date_range(begin_str, end_str, exclude=set()):
 def parse_file(infile):
     '''
      Parses a (prooperly formatted) input file and returns a list of RA objects.
-
      Params:
-     infile -> a file object
-
+        infile -> a file object
      Returns:
-     ras -> a list of RA objects based on the data in infile
+        ras -> a list of RA objects based on the data in infile
     '''
     try:
         ras = []
@@ -156,24 +178,23 @@ def parse_file(infile):
             irregular = set([get_date_obj(i) for i in parts[2].split(',')]) if parts[2] != '' else set()
             ras.append(RA(name=name, unv_regular=regular, unv_irregular=irregular))
     except Exception:
-        raise InvalidFileFormatException
+        raise InvalidFileFormatException(infile.name)
     return ras
 
-def create_schedule(ras, outfile, start='2/16/2018', end='5/18/2018', break_start='3/17/2018', break_end='3/24/2018'):
+def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
     '''
      Creates a duty schedule based on the data in ras a outputs to an outfile. 
-
      Params:
-     ras -> a list of RA objects
-     outfile -> a file object to be written to
-     start -> the starting date
-     end -> the ending date
-     break_start -> the starting date for a major break (Thanksgiving / Spring)
-     break_end -> the ending date for a major break (Thanksgiving / Spring)
+        ras -> a list of RA objects
+        outfile -> a file object to be written to
+        start -> the starting date
+        end -> the ending date
+        break_start -> the starting date for a major break (Thanksgiving / Spring)
+        break_end -> the ending date for a major break (Thanksgiving / Spring)
     '''
-    spring_break = create_date_range(break_start, break_end)[0]
     num_ras = len(ras)
-    duty_range, num_weekdays, num_weekends = create_date_range(start, end, spring_break)
+    break_ = create_date_range(break_start, break_end)[0] if break_start != None and break_end != None else set()
+    duty_range, num_weekdays, num_weekends = create_date_range(start, end, break_)
     weekdays_per = int(math.ceil(num_weekdays / float(num_ras)))
     weekends_per = int(math.ceil(num_weekends / float(num_ras)))
     weekdays_list, weekends_list = [], []
@@ -220,14 +241,13 @@ def create_schedule(ras, outfile, start='2/16/2018', end='5/18/2018', break_star
         print '%s : weekdays %d, weekends %d' % (ra.name, weekdays_per - curr[0], weekends_per - curr[1])
 
 def get_credentials():
-    """Gets valid user credentials from storage.
-
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Returns:
+    '''
+     Gets valid user credentials from storage.
+     If nothing has been stored, or if the stored credentials are invalid,
+     the OAuth2 flow is completed to obtain the new credentials.
+     Returns:
         Credentials, the obtained credential.
-    """
+    '''
     home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
@@ -247,32 +267,41 @@ def get_credentials():
     return credentials
 
 def parse_sched_file(sched_file):
-    # create some kind of tag to make sure file is actually a schedule
+    '''
+     Parses a schedule file of the format created when autogenerating a schedule.
+     Params:
+        sched_file -> a file handle for the file containing the schedule
+     Returns:
+        a dictionary representation of the schedule
+    '''
     sched = dict()
-    for line in sched_file:
-        parts = line.split(' : ') # day of week : date : name
-        sched[parts[1]] = parts[2]
-    return sched
+    lines = sched_file.readlines()
+    try:
+        for line in lines[1:]:
+            parts = line.split(' : ') # day of week : date : name
+            sched[parts[1]] = parts[2]
+        return sched
+    except Exception as e:
+        raise InvalidFileFormatException(sched_file.name)
+        print e
 
-def commit_sched(sched, tag, calID=None):
-    if calID == None:
-        calID = raw_input('Enter the calendar id for your google calendar.\n\
-                           On google calendar go your calendar\'s settings \
-                           and find the Calendar ID entry\n-> ')
+def commit_sched(sched, tag='', calID=''):
+    '''
+     Uses the Google Calendar API to commit a schedule dict to a Google Calendar.
+     Params:
+        sched -> a dictionary that maps string dates to names
+        tag -> an optional tag 
+        calID -> the Google Calendar ID
+    '''
+    calID = calID if calID != '' else raw_input('Enter the calendar id for your google calendar.\n\
+                                                  On google calendar go your calendar\'s settings \
+                                                  and find the Calendar ID entry\n-> ')
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
-    for curr in sched:
-        event = {
-            'summary': tag + sched[curr],
-            'start': {
-                'date': curr
-            },
-            'end': {
-                'date': curr
-            }
-        }
+    for curr in sched:       
         try:
+            event = create_gcal_even(sched[curr], curr, tag)
             service.events().insert(calendarId=calID, body=event).execute()
         except Exception as e:
             print 'Failed to update %s' % curr 
@@ -284,18 +313,26 @@ def commit_sched(sched, tag, calID=None):
                 elif cont.lower() == 'n':
                     sys.exit()
 
-def run_cl(infile, outfile, start_date, end_date):
+def create_sched(infile, outfile, start_date, end_date):
+    '''
+     Creates a schedule based on data in infile and outptus to outfile. 
+     Params:
+        infile -> an input file handle 
+        outfile -> an output file handle 
+        start_date -> the start date for the schedule 
+        end_date -> the end date for the schedule
+    '''
     ras = parse_file(infile)
     create_schedule(ras, outfile, start=start_date, end=end_date)
-    print('Finished schedule has been output to %s' % outfile.name)
-    print('Please look over schedule before commiting to Google Calendar.')
-    print('Run \'$ python scheduler.py -i %s -c\' to commit to Google Calendar.' % outfile.name)
+    print 'Finished schedule has been output to %s.\n \
+           Please look over schedule before commiting to Google Calendar.\n \
+           Run \'$ python scheduler.py -i %s -c\' to commit to Google Calendar.' % (outfile.name, outfile.name) 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ResLife duty scheduler',
                                      parents=[tools.argparser],
                                      prog='scheduler.py')
-    parser.add_argument('-i', '--infile', type=argparse.FileType('r'),
+    parser.add_argument('-i', '--infile', type=argparse.FileType('r'), required=True,
                         help='Enter filename of preference file. Example: mccoy.txt')
     parser.add_argument('-o', '--outfile', nargs='?', type=argparse.FileType('w'),
                         default='schedule_out.txt', help='Enter name of \
@@ -312,12 +349,22 @@ if __name__ == '__main__':
                         (Thanksgiving / Easter) in MM/DD/YYYY format.')
     parser.add_argument('-c', '--commit', action='store_true')
     parser.add_argument('-st', '--staff', default='', 
-                        help='The staff (for organization).')
-    parser.add_argument('-cal', '--calendar-id', default='')
+                        help='The staff (for organizational purposes) - commit mode only.')
+    parser.add_argument('-cal', '--calendar-id', default='',
+                        help='The google calendar id - commit mode only')
     flags = parser.parse_args()
     if flags.commit:
+        choose = raw_input('You\'ve entered commit mode which allows you to upload a generated schedule \
+               to Google Calendar. For this to work properly you need to have a Google Calender \
+               API key (client_secret.json), a Google account, and an editable Google Calendar \
+               with a Calendar ID.\nIf you don\'t meet one or more of those criteria, enter N to \
+               quit. Otherwise enter Y to continue.\n-> ')
+        choose = choose.lower()
+        while choose != 'y' or choose != 'n':
+            choose = raw_input('Enter Y to continue or N to quit -> ').lower()
+        if choose == 'n':
+            sys.exit()
         # assume that infile is the schedule file
-        #test_calendar_api()
         sched = parse_sched_file(flags.infile)
         print(sched)
         while True:
