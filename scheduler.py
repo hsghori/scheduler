@@ -1,12 +1,32 @@
+import datetime
 from datetime import date, timedelta
 import random as rand
 import math
+import os
 try:
+    import httplib2
+    from apiclient import discovery
+    from oauth2client import client
+    from oauth2client import tools
+    from oauth2client.file import Storage
     import argparse
 except ImportError:
     import pip
     pip.main(['install', 'argparse'])
+    pip.main(['install', 'httplib2'])
+    pip.main(['install', 'google-api-python-client'])
     import argparse
+    import httplib2
+    from apiclient import discovery
+    from oauth2client import client
+    from oauth2client import tools
+    from oauth2client.file import Storage
+
+# If modifying these scopes, delete your previously saved credentials
+# at ~/.credentials/calendar-python-quickstart.json
+SCOPES = 'https://www.googleapis.com/auth/calendar';
+CLIENT_SECRET_FILE = 'client_secret.json'
+APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 days = {
         'monday': 0, 
@@ -199,15 +219,83 @@ def create_schedule(ras, outfile, start='2/16/2018', end='5/18/2018', break_star
         curr = tracker[ra.name]
         print '%s : weekdays %d, weekends %d' % (ra.name, weekdays_per - curr[0], weekends_per - curr[1])
 
+def get_credentials():
+    """Gets valid user credentials from storage.
+
+    If nothing has been stored, or if the stored credentials are invalid,
+    the OAuth2 flow is completed to obtain the new credentials.
+
+    Returns:
+        Credentials, the obtained credential.
+    """
+    home_dir = os.path.expanduser('~')
+    credential_dir = os.path.join(home_dir, '.credentials')
+    if not os.path.exists(credential_dir):
+        os.makedirs(credential_dir)
+    credential_path = os.path.join(credential_dir,
+                                   'duty-scheduler.json')
+    store = Storage(credential_path)
+    credentials = store.get()
+    if not credentials or credentials.invalid:
+        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+        flow.user_agent = APPLICATION_NAME
+        if flags:
+            credentials = tools.run_flow(flow, store, flags)
+        else: # Needed only for compatibility with Python 2.6
+            credentials = tools.run(flow, store)
+        print('Storing credentials to ' + credential_path)
+    return credentials
+
+def parse_sched_file(sched_file):
+    # create some kind of tag to make sure file is actually a schedule
+    sched = dict()
+    for line in sched_file:
+        parts = line.split(' : ') # day of week : date : name
+        sched[parts[1]] = parts[2]
+    return sched
+
+def commit_sched(sched, tag, calID=None):
+    if calID == None:
+        calID = raw_input('Enter the calendar id for your google calendar.\n\
+                           On google calendar go your calendar\'s settings \
+                           and find the Calendar ID entry\n-> ')
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('calendar', 'v3', http=http)
+    for curr in sched:
+        event = {
+            'summary': tag + sched[curr],
+            'start': {
+                'date': curr
+            },
+            'end': {
+                'date': curr
+            }
+        }
+        try:
+            service.events().insert(calendarId=calID, body=event).execute()
+        except Exception as e:
+            print 'Failed to update %s' % curr 
+            print e
+            while True:
+                cont = raw_input('Continue? (Y/N) -> ')
+                if cont.lower() == 'y':
+                    break;
+                elif cont.lower() == 'n':
+                    sys.exit()
+
 def run_cl(infile, outfile, start_date, end_date):
     ras = parse_file(infile)
     create_schedule(ras, outfile, start=start_date, end=end_date)
     print('Finished schedule has been output to %s' % outfile.name)
+    print('Please look over schedule before commiting to Google Calendar.')
+    print('Run \'$ python scheduler.py -i %s -c\' to commit to Google Calendar.' % outfile.name)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ResLife duty scheduler',
+                                     parents=[tools.argparser],
                                      prog='scheduler.py')
-    parser.add_argument('-i', '--infile', type=argparse.FileType('r'), required=True,
+    parser.add_argument('-i', '--infile', type=argparse.FileType('r'),
                         help='Enter filename of preference file. Example: mccoy.txt')
     parser.add_argument('-o', '--outfile', nargs='?', type=argparse.FileType('w'),
                         default='schedule_out.txt', help='Enter name of \
@@ -222,5 +310,22 @@ if __name__ == '__main__':
     parser.add_argument('-be', '--break-end-date', default='3/24/2018', 
                         help='Enter the ending date of a major break \
                         (Thanksgiving / Easter) in MM/DD/YYYY format.')
-    args = parser.parse_args()
-    run_cl(args.infile, args.outfile, args.start_date, args.end_date)
+    parser.add_argument('-c', '--commit', action='store_true')
+    parser.add_argument('-st', '--staff', default='', 
+                        help='The staff (for organization).')
+    parser.add_argument('-cal', '--calendar-id', default='')
+    flags = parser.parse_args()
+    if flags.commit:
+        # assume that infile is the schedule file
+        #test_calendar_api()
+        sched = parse_sched_file(flags.infile)
+        print(sched)
+        while True:
+           choice = raw_input('Are you sure you want to commit this schedule? (Y/N) -> ')
+           if (choice.lower() == 'y'):
+               commit_sched(sched, tag=flags.staff)
+               break;
+           elif (choice.lower() == 'n'):
+               break;
+    else:
+        run_cl(flags.infile, flags.outfile, flags.start_date, flags.end_date)
