@@ -11,11 +11,13 @@ try:
     from oauth2client import tools
     from oauth2client.file import Storage
     import argparse
+    from tqdm import tqdm
 except ImportError:
     import pip
     pip.main(['install', 'argparse'])
     pip.main(['install', 'httplib2'])
     pip.main(['install', 'google-api-python-client'])
+    pip.main(['install', 'tqdm'])
     import argparse
     import httplib2
     from apiclient import discovery
@@ -117,8 +119,7 @@ def create_gcal_even(name, date, tag=''):
         a dict event based on the Google Calendar API
     '''
     tag = tag + ': ' if tag != '' and tag != None else ''
-    event = 
-        {
+    event = {
             'summary': tag + name,
             'start': {
                 'date': date
@@ -277,7 +278,7 @@ def parse_sched_file(sched_file):
     sched = dict()
     lines = sched_file.readlines()
     try:
-        for line in lines[1:]:
+        for line in lines:
             parts = line.split(' : ') # day of week : date : name
             sched[parts[1]] = parts[2]
         return sched
@@ -299,9 +300,9 @@ def commit_sched(sched, tag='', calID=''):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
-    for curr in sched:       
+    for curr in tqdm(sched):       
         try:
-            event = create_gcal_even(sched[curr], curr, tag)
+            event = create_gcal_even(sched[curr].strip(), curr, tag)
             service.events().insert(calendarId=calID, body=event).execute()
         except Exception as e:
             print 'Failed to update %s' % curr 
@@ -313,14 +314,14 @@ def commit_sched(sched, tag='', calID=''):
                 elif cont.lower() == 'n':
                     sys.exit()
 
-def run_commit(infile, staff):
+def run_commit(infile, staff, calID):
     choose = raw_input('You\'ve entered commit mode which allows you to upload a generated schedule \
                to Google Calendar. For this to work properly you need to have a Google Calender \
                API key (client_secret.json), a Google account, and an editable Google Calendar \
                with a Calendar ID.\nIf you don\'t meet one or more of those criteria, enter N to \
                quit. Otherwise enter Y to continue.\n-> ')
     choose = choose.lower()
-    while choose != 'y' or choose != 'n':
+    while choose != 'y' and choose != 'n':
         choose = raw_input('Enter Y to continue or N to quit -> ').lower()
     if choose == 'n':
         sys.exit()
@@ -330,7 +331,7 @@ def run_commit(infile, staff):
     while True:
        choice = raw_input('Are you sure you want to commit this schedule? (Y/N) -> ')
        if (choice.lower() == 'y'):
-           commit_sched(sched, tag=flags.staff)
+           commit_sched(sched, tag=staff, calID=calID)
            return
        elif (choice.lower() == 'n'):
            return
@@ -375,7 +376,7 @@ if __name__ == '__main__':
     parser.add_argument('-cal', '--calendar-id', default='',
                         help='The google calendar id - commit mode only')
     flags = parser.parse_args()
-    if flags.commit:
-        run_commit(flags.inflie, flags.staff)
-    else:
+    if flags.commit: #commit mode
+        run_commit(flags.infile, flags.staff, flags.calendar_id)
+    else: #create mode
         run_create(flags.infile, flags.outfile, flags.start_date, flags.end_date)
