@@ -286,6 +286,7 @@ def parse_sched_file(sched_file):
         raise InvalidFileFormatException(sched_file.name)
         print e
 
+
 def commit_sched(sched, tag='', calID=''):
     '''
      Uses the Google Calendar API to commit a schedule dict to a Google Calendar.
@@ -336,7 +337,7 @@ def run_commit(infile, staff, calID):
        elif (choice.lower() == 'n'):
            return
 
-def run_create(infile, outfile, start_date, end_date):
+def run_create(infile, outfile, start_date, end_date, break_start, break_end):
     '''
      Creates a schedule based on data in infile and outptus to outfile. 
      Params:
@@ -346,7 +347,7 @@ def run_create(infile, outfile, start_date, end_date):
         end_date -> the end date for the schedule
     '''
     ras = parse_file(infile)
-    create_schedule(ras, outfile, start=start_date, end=end_date)
+    create_schedule(ras, outfile, start=start_date, end=end_date, break_start=break_start, break_end=break_end)
     print 'Finished schedule has been output to %s.\n \
            Please look over schedule before commiting to Google Calendar.\n \
            Run \'$ python scheduler.py -i %s -c\' to commit to Google Calendar.' % (outfile.name, outfile.name) 
@@ -379,4 +380,5 @@ if __name__ == '__main__':
     if flags.commit: #commit mode
         run_commit(flags.infile, flags.staff, flags.calendar_id)
     else: #create mode
-        run_create(flags.infile, flags.outfile, flags.start_date, flags.end_date)
+        run_create(flags.infile, flags.outfile, flags.start_date, 
+                   flags.end_date, flags.break_start_date, flags.break_end_date)
