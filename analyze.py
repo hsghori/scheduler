@@ -1,33 +1,67 @@
 from datetime import date
 import sys
+import scheduler
+try:
+    import argparse
+except ImportError:
+    import pip
+    pip.main(['install', 'argparse'])
+    import argparse
 
-def parse_sched_file(fn):
-    '''
-     Parses a schedule file of the format created when autogenerating a schedule.
-     Params:
-        sched_file -> a file handle for the file containing the schedule
-     Returns:
-        a dictionary representation of the schedule
-    '''
-    sched_file = open(fn, 'r')
-    sched = dict()
-    lines = sched_file.readlines()
-    for line in lines:
-        parts = line.split(' : ') # day of week : date : name
-        sched[parts[1]] = parts[2]
-    return sched
+def get_summary(infile):
+    sched = scheduler.parse_sched_file(infile)
+    tracker = dict()
+    for curr in sched:
+        parts = curr.split('-')
+        d = date(int(parts[0]), int(parts[1]), int(parts[2]))
+        name = sched[curr].strip()
+        if name not in tracker:
+            tracker[name] = [0, 0]
+        if d.weekday() == 4 or d.weekday() == 5:
+            tracker[name][1]+=1
+        else:
+            tracker[name][0]+=1
+    for name in tracker:
+        print '%s weekdays=%d, weekends=%d' % (name, tracker[name][0], tracker[name][1])
 
-sched = parse_sched_file(sys.argv[1])
-tracker = dict()
-for curr in sched:
-    parts = curr.split('-')
-    d = date(int(parts[0]), int(parts[1]), int(parts[2]))
-    name = sched[curr].strip()
-    if name not in tracker:
-        tracker[name] = [0, 0]
-    if d.weekday() == 4 or d.weekday() == 5:
-        tracker[name][1]+=1
-    else:
-        tracker[name][0]+=1
-for name in tracker:
-    print '%s weekdays=%d, weekends=%d' % (name, tracker[name][0], tracker[name][1])
+def check_reqs(reqs_file, sched_file):
+    ras = scheduler.parse_file(infile)
+    ras_dict = dict()
+    for ra in ras:
+        ra_dict[ra.name] = ra
+    sched = scheduler.parse_sched_file(sched_file)
+    count = 0
+    for curr in sched:
+        parts = curr.split('-')
+        curr_date = date(int(parts[0]), int(parts[1]), int(parts[2]))
+        ra = ras_dict[sched[curr]]
+        if curr_date in ra.unvirregular or curr_date.weekday() in ra.unv_regular:
+            print 'Conflict: %s - %s' % (curr, sched[curr])
+            count += 1
+    print '%d total conflicts' % (count)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='ResLife duty scheduler',
+                                     prog='analyze.py')
+    parser.add_argument('-cr', '--check-reqs', action='store_true')
+    parser.add_argument('-gs', '--get-summary', action='store_true')
+    parser.add_argument('-pf', '--prefs-file', type=argparse.FileType('r'), default=None
+                        help='Enter filename of preferences file. Example: mccoy.txt')
+    parser.add_argument('-sf', '--schedule-file', type=argparse.FileType('r'), default=None, 
+                        help='Enter filename of schedule file.')
+    flags = parser.parse_args()
+    if flags.check_reqs:
+        if flags.prefs_file == None:
+            print 'Invalid arguments: need preferences file'
+            sys.exit()
+        if flags.schedule_file == None:
+            print 'Invalid arguments: need schedule file'
+            sys.exit()
+        check_reqs(flats.prefs_file, flags.schedule_file)
+    if flags.get_summary:
+        if flags.schedule_file == None:
+            print 'Invalid arguments: need schedule file'
+            sys.exit()
+        get_summary(flags.schedule_file)
+
+
