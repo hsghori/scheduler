@@ -100,6 +100,7 @@ If you spot some kind of bug you can approach me directly or open an issue on gi
 If you'd like to make a contribution to this repo please submit a pull request. 
 
 ### To Do
-* Integrate with Google Calendar API.
-* Create GUI (wxPython).
+* Look at two-back conflicts.
+* Create GUI (wxPython, flask, tkinter, etc).
 * Create option for dynamic input.
+* Abstract for more general schedules. 
