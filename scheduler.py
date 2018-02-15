@@ -277,14 +277,16 @@ def parse_sched_file(sched_file):
     '''
     sched = dict()
     lines = sched_file.readlines()
+    i = 1
     try:
         for line in lines:
             parts = line.split(' : ') # day of week : date : name
             sched[parts[1]] = parts[2]
+            i+=1
         return sched
     except Exception as e:
         raise InvalidFileFormatException(sched_file.name)
-        print e
+        print 'File format error on line %d' % (i)
 
 
 def commit_sched(sched, tag='', calID=''):
