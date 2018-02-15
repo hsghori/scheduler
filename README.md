@@ -77,7 +77,7 @@ The commands above will eventually prompt you to enter a Google Calendar ID. You
 ```Bash
 	$ python scheduler.py -c -i schedule_file.txt -c -cal <CALENDAR ID>
 ```
-Where <CALENDAR ID> is the calendar ID copied from the Calendar Settings. 
+Where `<CALENDAR ID>` is the calendar ID copied from the Calendar Settings. 
 
 ### Analyzing a Schedule
 If you've manually created or changed the schedule you may want to verify you still meet the RAs' preferences and that the number of weekday / weekend duties are balanced. The `analyze.py` program has a few features that will help with this. 
