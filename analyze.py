@@ -45,7 +45,7 @@ if __name__ == '__main__':
                                      prog='analyze.py')
     parser.add_argument('-cr', '--check-reqs', action='store_true')
     parser.add_argument('-gs', '--get-summary', action='store_true')
-    parser.add_argument('-pf', '--prefs-file', type=argparse.FileType('r'), default=None
+    parser.add_argument('-pf', '--prefs-file', type=argparse.FileType('r'), default=None,
                         help='Enter filename of preferences file. Example: mccoy.txt')
     parser.add_argument('-sf', '--schedule-file', type=argparse.FileType('r'), default=None, 
                         help='Enter filename of schedule file.')
