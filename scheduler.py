@@ -206,6 +206,17 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
         for we in range(weekends_per):
             weekends_list.append(ra)
         tracker[ra.name] = [weekdays_per, weekends_per]
+    rand.shuffle(ras)
+    count = 0
+    while len(weekdays_list) > num_weekdays:
+        weekdays_list.remove(ras[count % len(ras)])
+        count += 1
+    rand.shuffle(ras)
+    
+    count = 0
+    while len(weekends_list) > num_weekends:
+        weekends_list.remove(ras[count % len(ras)])
+        count += 1
     rand.shuffle(weekdays_list)
     rand.shuffle(weekends_list)
     for curr in duty_range:
@@ -318,10 +329,12 @@ def commit_sched(sched, tag='', calID=''):
                     sys.exit()
 
 def run_commit(infile, staff, calID):
-    choose = raw_input('You\'ve entered commit mode which allows you to upload a generated schedule \
-               to Google Calendar. For this to work properly you need to have a Google Calender \
-               API key (client_secret.json), a Google account, and an editable Google Calendar \
-               with a Calendar ID.\nIf you don\'t meet one or more of those criteria, enter N to \
+    choose = raw_input('You\'ve entered commit mode which allows you to upload\
+             a generated schedule to Google Calendar. For this to work \
+             properly you need to have a Google Calender API key ( \
+             client_secret.json), a Google account, and an editable Google \
+             Calendar with a Calendar ID.\nIf you don\'t meet one or more of \
+             those criteria, enter N to \
                quit. Otherwise enter Y to continue.\n-> ')
     choose = choose.lower()
     while choose != 'y' and choose != 'n':
@@ -332,11 +345,12 @@ def run_commit(infile, staff, calID):
     sched = parse_sched_file(infile)
     print(sched)
     while True:
-       choice = raw_input('Are you sure you want to commit this schedule? (Y/N) -> ')
-       if (choice.lower() == 'y'):
+       choice = raw_input('Are you sure you want to commit this schedule?\
+                          (Y/N) -> ')
+       if choice.lower() == 'y':
            commit_sched(sched, tag=staff, calID=calID)
            return
-       elif (choice.lower() == 'n'):
+       elif choice.lower() == 'n':
            return
 
 def run_create(infile, outfile, start_date, end_date, break_start, break_end):
@@ -349,7 +363,8 @@ def run_create(infile, outfile, start_date, end_date, break_start, break_end):
         end_date -> the end date for the schedule
     '''
     ras = parse_file(infile)
-    create_schedule(ras, outfile, start=start_date, end=end_date, break_start=break_start, break_end=break_end)
+    create_schedule(ras, outfile, start=start_date, end=end_date, 
+                    break_start=break_start, break_end=break_end)
     print 'Finished schedule has been output to %s.\n \
            Please look over schedule before commiting to Google Calendar.\n \
            Run \'$ python scheduler.py -i %s -c\' to commit to Google Calendar.' % (outfile.name, outfile.name) 
@@ -358,9 +373,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ResLife duty scheduler',
                                      parents=[tools.argparser],
                                      prog='scheduler.py')
-    parser.add_argument('-i', '--infile', type=argparse.FileType('r'), required=True,
-                        help='Enter filename of preference file. Example: mccoy.txt')
-    parser.add_argument('-o', '--outfile', nargs='?', type=argparse.FileType('w'),
+    parser.add_argument('-i', '--infile', type=argparse.FileType('r'),
+                        required=True,
+                        help='Enter filename of preference file. Example: \
+                        mccoy.txt')
+    parser.add_argument('-o', '--outfile', nargs='?', 
+                        type=argparse.FileType('w'),
                         default='schedule_out.txt', help='Enter name of \
                         preferred output file. Default is schedule_out.txt')
     parser.add_argument('-s', '--start-date', default='2/16/2018', 
@@ -374,13 +392,15 @@ if __name__ == '__main__':
                         help='Enter the ending date of a major break \
                         (Thanksgiving / Easter) in MM/DD/YYYY format.')
     parser.add_argument('-c', '--commit', action='store_true')
-    parser.add_argument('-st', '--staff', default='', 
-                        help='The staff (for organizational purposes) - commit mode only.')
+    parser.add_argument('-st', '--staff', default='',
+                        help='The staff (for organizational purposes) - commit\
+                         mode only.')
     parser.add_argument('-cal', '--calendar-id', default='',
                         help='The google calendar id - commit mode only')
     flags = parser.parse_args()
     if flags.commit: #commit mode
         run_commit(flags.infile, flags.staff, flags.calendar_id)
     else: #create mode
-        run_create(flags.infile, flags.outfile, flags.start_date, 
-                   flags.end_date, flags.break_start_date, flags.break_end_date)
+        run_create(flags.infile, flags.outfile, flags.start_date,
+                   flags.end_date, flags.break_start_date, 
+                   flags.break_end_date)

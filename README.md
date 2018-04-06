@@ -104,3 +104,6 @@ If you'd like to make a contribution to this repo please submit a pull request.
 * Create GUI (wxPython, flask, tkinter, etc).
 * Create option for dynamic input.
 * Abstract for more general schedules. 
+* Develop "best of batch" scheduling
+* Limited forward checking / edge consistency
+* Heuristic for resolving conflicts
