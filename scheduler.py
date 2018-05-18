@@ -52,6 +52,7 @@ inverse = {
 
 dayiter = timedelta(1)
 
+
 class RA:
     '''
      Class to represent a single RA.
@@ -68,6 +69,25 @@ class RA:
 
     def __str__(self):
         return 'Name: %s\nDays Restriction: %s\nDates Restriction %s' % (self.name, str(self.unv_regular), str(self.unv_irregular))
+
+
+class Schedule:
+
+    def __init__(self, sched, stats, weekdays_per, weekends_per, unresolved):
+        self.sched = sched
+        self.stats = stats
+        self.weekdays_per = weekdays_per
+        self.weekends_per = weekends_per
+        self.unresolved = unresolved
+
+    def heuristic(self):
+        wkd_fac = 0
+        wke_fac = 0
+        for ra in self.stats:
+            wkd_fac = abs(self.weekdays_per - self.stats[ra]['weekdays'])
+            wke_fac = abs(self.weekends_per - self.stats[ra]['weekends'])
+        return wkd_fac + wke_fac + self.unresolved
+
 
 class InvalidDateRangeException(Exception):
     '''
@@ -198,6 +218,7 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
     duty_range, num_weekdays, num_weekends = create_date_range(start, end, break_)
     weekdays_per = int(math.ceil(num_weekdays / float(num_ras)))
     weekends_per = int(math.ceil(num_weekends / float(num_ras)))
+    unresolved = 0
     weekdays_list, weekends_list = [], []
     tracker, schedule = dict(), dict()
     for ra in ras:
@@ -223,7 +244,7 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
         day = curr.weekday()
         if day != 4 and day != 5: # weekday
             lst, ind = weekdays_list, 0
-        else: #weekend
+        else: # weekend
             lst, ind = weekends_list, 1
         N = len(lst)
         attempts = 0
@@ -242,15 +263,22 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
             roll = rand.randint(0, N - 1)
             selected = lst[roll]
             schedule[curr] = selected.name
+            unresolved += 1
         nm = lst.pop(roll).name 
         tracker[nm][ind] -= 1
     for curr in duty_range:
         outfile.write('%s : %s : %s\n' % (inverse[curr.weekday()], str(curr), schedule[curr]))
     outfile.close()
     print 'Summary'
+    stats = dict()
     for ra in ras:
         curr = tracker[ra.name]
         print '%s : weekdays %d, weekends %d' % (ra.name, weekdays_per - curr[0], weekends_per - curr[1])
+        stats[ra] = {
+            'weekdays': weekdays_per - curr[0],
+            'weekends': weekends_per - curr[1]
+        }
+    return Schedule(schedule, stats, weekdays_per, weekends_per, unresolved)
 
 def get_credentials():
     '''
@@ -278,6 +306,7 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
+
 def parse_sched_file(sched_file):
     '''
      Parses a schedule file of the format created when autogenerating a schedule.
@@ -297,7 +326,6 @@ def parse_sched_file(sched_file):
         return sched
     except Exception as e:
         raise InvalidFileFormatException(sched_file.name)
-        print 'File format error on line %d' % (i)
 
 
 def commit_sched(sched, tag='', calID=''):
@@ -328,6 +356,7 @@ def commit_sched(sched, tag='', calID=''):
                 elif cont.lower() == 'n':
                     sys.exit()
 
+
 def run_commit(infile, staff, calID):
     choose = raw_input('You\'ve entered commit mode which allows you to upload\
              a generated schedule to Google Calendar. For this to work \
@@ -353,7 +382,8 @@ def run_commit(infile, staff, calID):
        elif choice.lower() == 'n':
            return
 
-def run_create(infile, outfile, start_date, end_date, break_start, break_end):
+
+def run_create(infile, outfile, threads, start_date, end_date, break_start, break_end):
     '''
      Creates a schedule based on data in infile and outptus to outfile. 
      Params:
@@ -363,11 +393,14 @@ def run_create(infile, outfile, start_date, end_date, break_start, break_end):
         end_date -> the end date for the schedule
     '''
     ras = parse_file(infile)
-    create_schedule(ras, outfile, start=start_date, end=end_date, 
-                    break_start=break_start, break_end=break_end)
+    for t in threads:
+        create_schedule(ras, outfile, start=start_date, end=end_date,
+                     break_start=break_start, break_end=break_end)
+
     print 'Finished schedule has been output to %s.\n \
            Please look over schedule before commiting to Google Calendar.\n \
            Run \'$ python scheduler.py -i %s -c\' to commit to Google Calendar.' % (outfile.name, outfile.name) 
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ResLife duty scheduler',
@@ -381,6 +414,8 @@ if __name__ == '__main__':
                         type=argparse.FileType('w'),
                         default='schedule_out.txt', help='Enter name of \
                         preferred output file. Default is schedule_out.txt')
+    parser.add_argument('-t', '--threads', default=10,
+                        help='Enter number of schedules to choose from.')
     parser.add_argument('-s', '--start-date', default='2/16/2018', 
                         help='Enter starting date in MM/DD/YYYY format.')
     parser.add_argument('-e', '--end-date', default='5/17/2018', 
@@ -398,9 +433,9 @@ if __name__ == '__main__':
     parser.add_argument('-cal', '--calendar-id', default='',
                         help='The google calendar id - commit mode only')
     flags = parser.parse_args()
-    if flags.commit: #commit mode
+    if flags.commit: # commit mode
         run_commit(flags.infile, flags.staff, flags.calendar_id)
-    else: #create mode
-        run_create(flags.infile, flags.outfile, flags.start_date,
+    else: # create mode
+        run_create(flags.infile, flags.outfile, flags.threads, flags.start_date,
                    flags.end_date, flags.break_start_date, 
                    flags.break_end_date)
