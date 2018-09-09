@@ -27,30 +27,31 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/calendar';
+SCOPES = 'https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 days = {
-        'monday': 0, 
-        'tuesday': 1, 
-        'wednesday': 2, 
-        'thursday': 3, 
-        'friday': 4, 
-        'saturday': 5, 
-        'sunday': 6
-       }
+    'monday': 0,
+    'tuesday': 1,
+    'wednesday': 2,
+    'thursday': 3,
+    'friday': 4,
+    'saturday': 5,
+    'sunday': 6
+}
 inverse = {
-        0: 'monday',
-        1: 'tuesday',
-        2: 'wednesday',
-        3: 'thursday',
-        4: 'friday',
-        5: 'saturday',
-        6: 'sunday'
-        }
+    0: 'monday',
+    1: 'tuesday',
+    2: 'wednesday',
+    3: 'thursday',
+    4: 'friday',
+    5: 'saturday',
+    6: 'sunday'
+}
 
 dayiter = timedelta(1)
+
 
 class RA:
     '''
@@ -62,12 +63,13 @@ class RA:
     '''
 
     def __init__(self, name='', unv_regular=set(), unv_irregular=set()):
-        self.name = name 
+        self.name = name
         self.unv_regular = unv_regular
         self.unv_irregular = unv_irregular
 
     def __str__(self):
         return 'Name: %s\nDays Restriction: %s\nDates Restriction %s' % (self.name, str(self.unv_regular), str(self.unv_irregular))
+
 
 class InvalidDateRangeException(Exception):
     '''
@@ -78,11 +80,12 @@ class InvalidDateRangeException(Exception):
     '''
 
     def __init__(self, date1, date2):
-        self.date1 = date1 
+        self.date1 = date1
         self.date2 = date2
 
     def __str__(self):
         return 'Start date %s is later than end date %s' % (self.date1, self.date2)
+
 
 class InvalidFileFormatException(Exception):
     '''
@@ -97,6 +100,7 @@ class InvalidFileFormatException(Exception):
     def __str__(self):
         return '%s - file format is invalid.' % (self.fn)
 
+
 def get_date_obj(s):
     '''
      Returns a date object based on an input string.
@@ -107,6 +111,7 @@ def get_date_obj(s):
     if len(parts[2]) == 2:
         parts[2] = '20' + parts[2]
     return date(int(parts[2]), int(parts[0]), int(parts[1]))
+
 
 def create_gcal_even(name, date, tag=''):
     '''
@@ -120,15 +125,16 @@ def create_gcal_even(name, date, tag=''):
     '''
     tag = tag + ': ' if tag != '' and tag != None else ''
     event = {
-            'summary': tag + name,
-            'start': {
-                'date': date
-            },
-            'end': {
-                'date': date
-            }
+        'summary': tag + name,
+        'start': {
+            'date': date
+        },
+        'end': {
+            'date': date
         }
+    }
     return event
+
 
 def create_date_range(begin_str, end_str, exclude=set()):
     '''
@@ -152,11 +158,12 @@ def create_date_range(begin_str, end_str, exclude=set()):
         if curr not in exclude:
             ret.append(curr)
             if curr.weekday() < 5:
-                weekdays += 1 
+                weekdays += 1
             else:
                 weekends += 1
         curr = curr + dayiter
     return (ret, weekdays, weekends)
+
 
 def parse_file(infile):
     '''
@@ -174,13 +181,17 @@ def parse_file(infile):
                 continue
             name = parts[0].strip()
             parts[1] = parts[1].replace(' ', '').strip().lower()
-            regular = set([days[d] for d in parts[1].split(',')]) if parts[1] != '' else set()
+            regular = set([days[d] for d in parts[1].split(',')]
+                          ) if parts[1] != '' else set()
             parts[2] = parts[2].replace(' ', '').strip()
-            irregular = set([get_date_obj(i) for i in parts[2].split(',')]) if parts[2] != '' else set()
-            ras.append(RA(name=name, unv_regular=regular, unv_irregular=irregular))
+            irregular = set([get_date_obj(i) for i in parts[2].split(',')]) if parts[
+                2] != '' else set()
+            ras.append(RA(name=name, unv_regular=regular,
+                          unv_irregular=irregular))
     except Exception:
         raise InvalidFileFormatException(infile.name)
     return ras
+
 
 def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
     '''
@@ -194,44 +205,52 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
         break_end -> the ending date for a major break (Thanksgiving / Spring)
     '''
     num_ras = len(ras)
-    break_ = create_date_range(break_start, break_end)[0] if break_start != None and break_end != None else set()
-    duty_range, num_weekdays, num_weekends = create_date_range(start, end, break_)
+    break_, _, _ = create_date_range(
+        break_start, break_end) if break_start != None and break_end != None else set()
+    duty_range, num_weekdays, num_weekends = create_date_range(
+        start, end, break_)
     weekdays_per = int(math.ceil(num_weekdays / float(num_ras)))
     weekends_per = int(math.ceil(num_weekends / float(num_ras)))
     weekdays_list, weekends_list = [], []
     tracker, schedule = dict(), dict()
     for ra in ras:
-        for wk in range(weekdays_per):
+        for wk in range(weekdays_per + 1):
             weekdays_list.append(ra)
-        for we in range(weekends_per):
+        for we in range(weekends_per + 1):
             weekends_list.append(ra)
         tracker[ra.name] = [weekdays_per, weekends_per]
     rand.shuffle(ras)
     count = 0
+    '''
     while len(weekdays_list) > num_weekdays:
         weekdays_list.remove(ras[count % len(ras)])
         count += 1
+    '''
     rand.shuffle(ras)
-    
-    count = 0
-    while len(weekends_list) > num_weekends:
-        weekends_list.remove(ras[count % len(ras)])
-        count += 1
+
     rand.shuffle(weekdays_list)
     rand.shuffle(weekends_list)
+
+    print len(weekdays_list), len(weekends_list)
+    print num_weekdays, num_weekends
+
     for curr in duty_range:
         day = curr.weekday()
-        if day != 4 and day != 5: # weekday
+        # print curr
+        if day != 4 and day != 5:  # weekday
             lst, ind = weekdays_list, 0
-        else: #weekend
+        else:  # weekend
             lst, ind = weekends_list, 1
+        # print curr, day
+         # print lst
         N = len(lst)
         attempts = 0
         found = False
         while attempts < num_ras:
             roll = rand.randint(0, N - 1)
             selected = lst[roll]
-            valid = day not in selected.unv_regular and curr not in selected.unv_irregular and schedule.get(curr - dayiter, 'None') != selected.name
+            valid = day not in selected.unv_regular and curr not in selected.unv_irregular and schedule.get(
+                curr - dayiter, 'None') != selected.name
             if valid:
                 schedule[curr] = selected.name
                 found = True
@@ -242,15 +261,17 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
             roll = rand.randint(0, N - 1)
             selected = lst[roll]
             schedule[curr] = selected.name
-        nm = lst.pop(roll).name 
+        nm = lst.pop(roll).name
         tracker[nm][ind] -= 1
     for curr in duty_range:
-        outfile.write('%s : %s : %s\n' % (inverse[curr.weekday()], str(curr), schedule[curr]))
+        outfile.write('%s : %s : %s\n' %
+                      (inverse[curr.weekday()], str(curr), schedule[curr]))
     outfile.close()
     print 'Summary'
     for ra in ras:
         curr = tracker[ra.name]
         print '%s : weekdays %d, weekends %d' % (ra.name, weekdays_per - curr[0], weekends_per - curr[1])
+
 
 def get_credentials():
     '''
@@ -273,10 +294,11 @@ def get_credentials():
         flow.user_agent = APPLICATION_NAME
         if flags:
             credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
+        else:  # Needed only for compatibility with Python 2.6
             credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
+
 
 def parse_sched_file(sched_file):
     '''
@@ -291,9 +313,9 @@ def parse_sched_file(sched_file):
     i = 1
     try:
         for line in lines:
-            parts = line.split(' : ') # day of week : date : name
+            parts = line.split(' : ')  # day of week : date : name
             sched[parts[1]] = parts[2]
-            i+=1
+            i += 1
         return sched
     except Exception as e:
         raise InvalidFileFormatException(sched_file.name)
@@ -314,19 +336,20 @@ def commit_sched(sched, tag='', calID=''):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
-    for curr in tqdm(sched):       
+    for curr in tqdm(sched):
         try:
             event = create_gcal_even(sched[curr].strip(), curr, tag)
             service.events().insert(calendarId=calID, body=event).execute()
         except Exception as e:
-            print 'Failed to update %s' % curr 
+            print 'Failed to update %s' % curr
             print e
             while True:
                 cont = raw_input('Continue? (Y/N) -> ')
                 if cont.lower() == 'y':
-                    break;
+                    break
                 elif cont.lower() == 'n':
                     sys.exit()
+
 
 def run_commit(infile, staff, calID):
     choose = raw_input('You\'ve entered commit mode which allows you to upload\
@@ -345,13 +368,14 @@ def run_commit(infile, staff, calID):
     sched = parse_sched_file(infile)
     print(sched)
     while True:
-       choice = raw_input('Are you sure you want to commit this schedule?\
+        choice = raw_input('Are you sure you want to commit this schedule?\
                           (Y/N) -> ')
-       if choice.lower() == 'y':
-           commit_sched(sched, tag=staff, calID=calID)
-           return
-       elif choice.lower() == 'n':
-           return
+        if choice.lower() == 'y':
+            commit_sched(sched, tag=staff, calID=calID)
+            return
+        elif choice.lower() == 'n':
+            return
+
 
 def run_create(infile, outfile, start_date, end_date, break_start, break_end):
     '''
@@ -363,11 +387,11 @@ def run_create(infile, outfile, start_date, end_date, break_start, break_end):
         end_date -> the end date for the schedule
     '''
     ras = parse_file(infile)
-    create_schedule(ras, outfile, start=start_date, end=end_date, 
+    create_schedule(ras, outfile, start=start_date, end=end_date,
                     break_start=break_start, break_end=break_end)
     print 'Finished schedule has been output to %s.\n \
            Please look over schedule before commiting to Google Calendar.\n \
-           Run \'$ python scheduler.py -i %s -c\' to commit to Google Calendar.' % (outfile.name, outfile.name) 
+           Run \'$ python scheduler.py -i %s -c\' to commit to Google Calendar.' % (outfile.name, outfile.name)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ResLife duty scheduler',
@@ -377,18 +401,18 @@ if __name__ == '__main__':
                         required=True,
                         help='Enter filename of preference file. Example: \
                         mccoy.txt')
-    parser.add_argument('-o', '--outfile', nargs='?', 
+    parser.add_argument('-o', '--outfile', nargs='?',
                         type=argparse.FileType('w'),
                         default='schedule_out.txt', help='Enter name of \
                         preferred output file. Default is schedule_out.txt')
-    parser.add_argument('-s', '--start-date', default='2/16/2018', 
+    parser.add_argument('-s', '--start-date', default='2/16/2018',
                         help='Enter starting date in MM/DD/YYYY format.')
-    parser.add_argument('-e', '--end-date', default='5/17/2018', 
+    parser.add_argument('-e', '--end-date', default='5/17/2018',
                         help='Enter ending date in MM/DD/YYYY format.')
-    parser.add_argument('-bs', '--break-start-date', default='3/17/2018', 
+    parser.add_argument('-bs', '--break-start-date', default='3/17/2018',
                         help='Enter the starting date of a major break \
                         (Thanksgiving / Easter) in MM/DD/YYYY format.')
-    parser.add_argument('-be', '--break-end-date', default='3/24/2018', 
+    parser.add_argument('-be', '--break-end-date', default='3/24/2018',
                         help='Enter the ending date of a major break \
                         (Thanksgiving / Easter) in MM/DD/YYYY format.')
     parser.add_argument('-c', '--commit', action='store_true')
@@ -398,9 +422,9 @@ if __name__ == '__main__':
     parser.add_argument('-cal', '--calendar-id', default='',
                         help='The google calendar id - commit mode only')
     flags = parser.parse_args()
-    if flags.commit: #commit mode
+    if flags.commit:  # commit mode
         run_commit(flags.infile, flags.staff, flags.calendar_id)
-    else: #create mode
+    else:  # create mode
         run_create(flags.infile, flags.outfile, flags.start_date,
-                   flags.end_date, flags.break_start_date, 
+                   flags.end_date, flags.break_start_date,
                    flags.break_end_date)
