@@ -189,9 +189,14 @@ def parse_file(infile):
                 2] != '' else set()
             ras.append(RA(name=name, unv_regular=regular,
                           unv_irregular=irregular))
+<<<<<<< HEAD
         except Exception as e:
             print e
             raise InvalidFileFormatException()
+=======
+    except Exception:
+        raise InvalidFileFormatException(infile.name)
+>>>>>>> 66cef1a8a835b1f99731bcdcb76b92292ffb5c66
     return ras
 
 
