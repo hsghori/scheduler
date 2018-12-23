@@ -1,0 +1,56 @@
+@import '../js/node_modules/styledot/scss/main';
+
+.module-scheduler-form {
+    input {
+        margin: 4px 2px 4px 2px;
+    }
+
+    .sd-card {
+        width: 500px;
+        margin: 32px auto 32px auto;
+        background-color: $gray2;
+    }
+
+    .side-by-side {
+        display: flex;
+        >.field-group {
+            flex: 0.5;
+        }
+    }
+
+    .row-button-wrapper {
+        display: flex;
+        width: 500px;
+        &.outside-form {
+            margin: 32px auto 32px auto;
+        }
+        &.center {
+            justify-content: space-around;
+        }
+        &.right {
+            justify-content: flex-end;
+        }
+    }
+
+    .commit-button {
+        padding-left: 8px;
+    }
+
+    button {
+        &:hover {
+            cursor: pointer;
+        }
+        .sd-unbutton {
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+    fieldset {
+        margin-top: 16px;
+    }
+}
+
+.hide {
+    display: none;
+}
