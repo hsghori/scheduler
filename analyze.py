@@ -57,7 +57,7 @@ if __name__ == '__main__':
         if flags.schedule_file == None:
             print 'Invalid arguments: need schedule file'
             sys.exit()
-        check_reqs(flats.prefs_file, flags.schedule_file)
+        check_reqs(flags.prefs_file, flags.schedule_file)
     if flags.get_summary:
         if flags.schedule_file == None:
             print 'Invalid arguments: need schedule file'

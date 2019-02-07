@@ -1,0 +1,11 @@
+#!"/Users/eric/Dropbox/JHU/ResLife/ResLife 2018-2019/duty_scheduling/scheduler/test/bin/python"
+
+# -*- coding: utf-8 -*-
+import re
+import sys
+
+from pip import main
+
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
+    sys.exit(__main__.main())

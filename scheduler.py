@@ -4,26 +4,13 @@ import random as rand
 import math
 import os
 import sys
-try:
-    import httplib2
-    from apiclient import discovery
-    from oauth2client import client
-    from oauth2client import tools
-    from oauth2client.file import Storage
-    import argparse
-    from tqdm import tqdm
-except ImportError:
-    import pip
-    pip.main(['install', 'argparse'])
-    pip.main(['install', 'httplib2'])
-    pip.main(['install', 'google-api-python-client'])
-    pip.main(['install', 'tqdm'])
-    import argparse
-    import httplib2
-    from apiclient import discovery
-    from oauth2client import client
-    from oauth2client import tools
-    from oauth2client.file import Storage
+import httplib2
+from apiclient import discovery
+from oauth2client import client
+from oauth2client import tools
+from oauth2client.file import Storage
+import argparse
+from tqdm import tqdm
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
