@@ -1,1 +1,7 @@
-*.txt *.pdf
+*.txt 
+*.pdf
+*.json
+.DS_Store
+*.pyc
+*.vscode
+static/js/node_modules
