@@ -11,7 +11,7 @@
                 <div class="side-by-side">
                     <div class="field-group">
                         <input id="start-date" type="date" placeholder="Start date"></input>
-                        <label id="end-date">Start date</label>
+                        <label for="start-date">Start date</label>
                     </div>
                     <div class="field-group">
                         <input id="end-date" type="date" placeholder="End date"></input>
@@ -30,30 +30,41 @@
                 </div>
             </div>
             <div class="form-container"></div>
-            
             <div class="row-button-wrapper outside-form center">
                 <button class="sd-button js-add-person-button">Add +</button>
-                <button class="sd-button js-submit-button">Generate schedule</button>
+                <button class="hide sd-button js-submit-button">Generate schedule</button>
             </div>
         </div>
         <div class="module-scheduler-schedule hide">
             <div class="schedule-card sd-card sd-elevation-2">
-                <table class="schedule-table">
-                    <tr>
-                        <th>Name</th>
-                        <th>Date</th>
-                        <th>Is Valid</th>
-                    </tr>
-                    <tr class="schedule-template-row hide">
-                        <td class="date-cell"></td>
-                        <td class="name-cell">
-                            <input id="name-value" type="text"></input>
-                        </td>
-                        <td class="is-valid-cell">
-                            <input id="is-valid-value" type="checkbox"></input>
-                        </td>
-                    </tr>
-                </table>
+                <div class="table-wrapper">
+                    <table class="schedule-table">
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Fits Requirements</th>
+                        </tr>
+                        <tbody class="schedule-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="schedule-card sd-card sd-elevation-2 analysis-card hide">
+                <div class="table-wrapper">
+                    <table class="analysis-table">
+                        <tr>
+                            <th>Name</th>
+                            <th>Number of weekdays</th>
+                            <th>Number of weekends</th>
+                        </tr>
+                        <tbody class="analysis-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row-button-wrapper outside-form center">
+                <button class="sd-button small-button js-start-new-button">Start new schedule</button>
+                <button class="sd-button small-button js-rerun-button">Redo schedule</button>
+                <button class="sd-button small-button js-analyze-button">Analyze schedule</button>
+                <button class="sd-button small-button js-download-button">Download schedule</button>
             </div>
         </div>
     </body>

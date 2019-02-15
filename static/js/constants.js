@@ -28,7 +28,27 @@ const createForm = (name) => `
 	</div>
 `;
 
+const createScheduleRow = (name, date, isValid) => `
+	<tr class="schedule-row">
+	    <td class="date-cell">${date}</td>
+	    <td class="name-cell">
+	        <input id="name-value" type="text" value="${name}"></input>
+	    </td>
+	    <td class="is-valid-cell">
+	        <input id="is-valid-value-${date}" type="checkbox" ${isValid ? 'checked' : ''}></input>
+	    </td>
+	</tr>
+`;
+
+const createAnalysisRow = (name, numWeekdays, numWeekends) => `
+	<tr class="analysis-row">
+		<td class="name-cell">${name}</td>
+		<td class="num-weekdays-cell">${numWeekdays}</td>
+		<td class="num-weekends-cell">${numWeekends}</td>
+	</tr>
+`;
+
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
 
-module.exports = { createForm, DAYS };
+module.exports = { createForm, createScheduleRow, createAnalysisRow, DAYS };

@@ -1924,32 +1924,20 @@ input[type=checkbox].sd-form-checkbox:checked + .sd-form-label::before {
   background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 8%, rgba(255, 255, 255, 0) 16%);
 }
 
-.module-scheduler-form input {
-  margin: 4px 2px 4px 2px;
-}
-.module-scheduler-form .sd-card {
+.sd-card {
   width: 500px;
   margin: 32px auto 32px auto;
   background-color: #EDEFF0;
+}
+
+.module-scheduler-form input {
+  margin: 4px 2px 4px 2px;
 }
 .module-scheduler-form .side-by-side {
   display: flex;
 }
 .module-scheduler-form .side-by-side > .field-group {
   flex: 0.5;
-}
-.module-scheduler-form .row-button-wrapper {
-  display: flex;
-  width: 500px;
-}
-.module-scheduler-form .row-button-wrapper.outside-form {
-  margin: 32px auto 32px auto;
-}
-.module-scheduler-form .row-button-wrapper.center {
-  justify-content: space-around;
-}
-.module-scheduler-form .row-button-wrapper.right {
-  justify-content: flex-end;
 }
 .module-scheduler-form .commit-button {
   padding-left: 8px;
@@ -1964,8 +1952,90 @@ input[type=checkbox].sd-form-checkbox:checked + .sd-form-label::before {
   margin-top: 16px;
 }
 
+.module-scheduler-schedule .table-wrapper {
+  display: flex;
+  justify-content: space-around;
+}
+.module-scheduler-schedule .table {
+  width: 100%;
+}
+
+.row-button-wrapper {
+  display: flex;
+  width: 500px;
+}
+.row-button-wrapper.outside-form {
+  margin: 32px auto 32px auto;
+}
+.row-button-wrapper.center {
+  justify-content: space-around;
+}
+.row-button-wrapper.right {
+  justify-content: flex-end;
+}
+
+.small-button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  -o-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  border: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  border-radius: 100px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: "Avenir Next", Helvetica, Roboto, Arial, sans-serif;
+  font-size: rem(16);
+  font-weight: 700;
+  line-height: normal;
+  text-decoration: none;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  padding: 0 12px;
+  height: 24px;
+  min-width: 72px;
+  font-size: rem(14);
+  background-color: #1976D2;
+  color: #FFF;
+}
+.small-button::after {
+  content: none !important;
+}
+.small-button:hover, .small-button:focus {
+  background-color: #005B98;
+  color: #FFF;
+  text-decoration: none;
+}
+.small-button:disabled {
+  background-color: #EDEFF0;
+  box-shadow: unset;
+  color: #C0C1C2;
+  cursor: not-allowed;
+}
+.small-button.mod-wide {
+  width: 100%;
+}
+@media screen and (max-width: 767px) {
+  .small-button.mod-wide-mobile {
+    display: flex;
+    width: 100%;
+  }
+}
+
 .hide {
   display: none;
+}
+
+.schedule-card td {
+  padding-left: 8px;
+  padding-right: 8px;
+  text-align: center;
 }
 
 /*# sourceMappingURL=main.css.map */

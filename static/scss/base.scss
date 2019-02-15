@@ -1,34 +1,20 @@
 @import '../js/node_modules/styledot/scss/main';
 
+.sd-card {
+    width: 500px;
+    margin: 32px auto 32px auto;
+    background-color: $gray2;
+}
+
 .module-scheduler-form {
     input {
         margin: 4px 2px 4px 2px;
-    }
-
-    .sd-card {
-        width: 500px;
-        margin: 32px auto 32px auto;
-        background-color: $gray2;
     }
 
     .side-by-side {
         display: flex;
         >.field-group {
             flex: 0.5;
-        }
-    }
-
-    .row-button-wrapper {
-        display: flex;
-        width: 500px;
-        &.outside-form {
-            margin: 32px auto 32px auto;
-        }
-        &.center {
-            justify-content: space-around;
-        }
-        &.right {
-            justify-content: flex-end;
         }
     }
 
@@ -51,6 +37,42 @@
     }
 }
 
+.module-scheduler-schedule {
+    .table-wrapper {
+        display: flex;
+        justify-content: space-around;
+    }
+    .table {
+        width: 100%;
+    }
+}
+
+.row-button-wrapper {
+    display: flex;
+    width: 500px;
+    &.outside-form {
+        margin: 32px auto 32px auto;
+    }
+    &.center {
+        justify-content: space-around;
+    }
+    &.right {
+        justify-content: flex-end;
+    }
+}
+
+.small-button {
+    @include sd-button(blue, small, solid);
+}
+
 .hide {
     display: none;
+}
+
+.schedule-card {
+    td {
+        padding-left: 8px;
+        padding-right: 8px;
+        text-align: center;
+    }
 }

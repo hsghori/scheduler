@@ -1,109 +1,181 @@
-# JHU ResLife Duty Scheduler
-This program is designed to facilitate duty scheduling for JHU Reslife. If you want to use it for some other purpose, go ahead! Feel free to use and modify this program as you see fit. 
+# Scheduler
+This program is designed to facilitate daily shift scheduling - it was originally designed to facilitate on call
+rotation scheduling for JHU ResLife. If you want to use it for some other purpose, go ahead! Feel free to use and
+modify this program as you see fit.
 
-### Installation 
+## Online
+
+The online version of the scheduler is located at: https://hsghori.github.io/scheduler/.
+
+## Development
+
+This web-application is relatively simple and ports the algorithms defined in the `schedule.py` file to a single
+page web app that could be hosted for free on github pages. For that reason I did not use any web frameworks like
+Django / Flask or JS frameworks like React or Angular to clean up the front end logic. The frontend logic and
+scheduling algorithms logic are written entirely in Javascript using JQuery and the computational load is handled
+by the client's browser.
+
+You need to have [NodeJS](https://nodejs.org/en/) installed to properly build this app.
+
+Development dependencies:
+- [Styledot](https://style.23andme.com/style/)
+- [Lodash](https://lodash.com/)
+- [JQuery](https://jquery.com/)
+- [Browserify](http://browserify.org/)
+- [Sass](https://sass-lang.com/)
+
+These dependencies are defined in the `package.json` file and can be installed directly from there.
+
+DO NOT MODIFY `bundle.js` or `main.css`. If you want to make js changes you should update `main.js`, `schedule.js`,
+or `constants.js`. If you want to make CSS changes you should update `base.scss`.
+
+When you make any CSS or JS changes you need to run `make` at the root of the project.
+
+If you want to update the scheduling algorithm I would recommend updating and testing with the python file first
+before updating the algorithm in JS.
+
+## Local
+
+### Installation
 To use this program you need to have Python 2.7+ installed: https://www.python.org/downloads/.
-You also need to clone or download this repo. 
+You also need to clone or download this repo. All the requirements are defined in the
+[Pipfile](https://pipenv.readthedocs.io/en/latest/basics/) - you can install the dependencies using:
+
+```Bash
+$ pipenv install
+```
 
 ### Creating a Schedule
+
 1. Create an input text file with the format
+
 	```
-    	person1 | day_of_week1, day_of_week2, ... | date1, date2, ...
+	person1 | day_of_week1, day_of_week2, ... | date1, date2, ...
     ```
+
     day_of_weekN is the day of the week when person1 can't do duty (ie monday, tuesday, etc)
     dateN is a specific date where person1 can't do duty (format MM/DD/YYYY) (ie 01/10/2018)
 
     Example:
+
 	```
-	    John | Monday | 02/14/2018, 03/01/2018, 05/01/2018
-	    Jill | Tuesday, Wednesday | 04/10/2018, 05/13/2018
+    John | Monday | 02/14/2018, 03/01/2018, 05/01/2018
+    Jill | Tuesday, Wednesday | 04/10/2018, 05/13/2018
 	```
+
 2. Save the input file as a text file (someFile.txt) in the same place that you've cloned / downloaded this repo.
 3. Open your terminal and navigate to the place where you've cloned / downloaded this repo and type:
+
 	```Bash
-	    $ python scheduler.py --infile someFile.txt
+	$ python scheduler.py --infile someFile.txt
 	```
-    The program should output the total number of weekday and weekend assignments for each person and any days where a conflict couldn't be easily resolved.  
+
+    The program should output the total number of weekday and weekend assignments for each person and any days where a conflict couldn't be easily resolved.
 	You can also specify the name of the output file (by default is schedule\_out.txt) via:
+
 	```Bash
-		$ python scheduler.py --infile someFile.txt --outfile someOutput.txt
+	$ python scheduler.py --infile someFile.txt --outfile someOutput.txt
 	```
 
 	__If you're using this tool past Spring 2018 you can enter new start and end dates both for the semester and for major breaks (Thanksgiving / Spring)__
 
 	For example, the command to generate a schedule for Fall 2018 may look like:
+
 	```Bash
-		$ python scheduler.py --infile someFile.txt --outfile someOutput.txt --start-date 8/25/2018 --end-date 12/21/2018 --break-start-date 11/17/2018 --break-end-date 11/25/2018
+	$ python scheduler.py --infile someFile.txt --outfile someOutput.txt --start-date 8/25/2018 --end-date 12/21/2018 --break-start-date 11/17/2018 --break-end-date 11/25/2018
 	```
+
 	If you need help with the commands you can type:
+
 	```Bash
-		$ python scheduler.py --help
+	$ python scheduler.py --help
 	```
 	__Note__: Each of the commands above has a less verbose version. In order they are:
+
 	```Bash
-		$ python scheduler.py -i someFile.txt
-		$ python scheduler.py -i someFile.txt -o someOutput.txt
-		$ python scheduler.py -i someFile.txt -o someOutput.txt -s 8/25/2018 -e 12/21/2018 -bs 11/17/2018 -be 11/25/2018
-		$ python scheduler.py -h
+	$ python scheduler.py -i someFile.txt
+	$ python scheduler.py -i someFile.txt -o someOutput.txt
+	$ python scheduler.py -i someFile.txt -o someOutput.txt -s 8/25/2018 -e 12/21/2018 -bs 11/17/2018 -be 11/25/2018
+	$ python scheduler.py -h
 	```
-4. If the program ran with no errors a file (someOutput.txt) should have been generated with a randomized duty schedule based on the restrictions given in someFile. 
 
-__Note__: This program isn't perfect. It uses a lot of randomness to generate the schedule and as such it may not always give the best solution or be able to resolve every day. If you find the schedule isn't particularly balanced on the first try, run it a few more times and select the best output. You can also manually edit the text file before commiting to Google Calendar. 
+4. If the program ran with no errors a file (someOutput.txt) should have been generated with a randomized duty
+   schedule based on the restrictions given in someFile.
 
-### Commiting a Schedule to Google Calendar 
-To commit a schedule to Gogle Calendar you need:
+__Note__: This program isn't perfect. It uses a lot of randomness to generate the schedule and as such it may not
+always give the best solution or be able to resolve every day. If you find the schedule isn't particularly
+balanced on the first try, run it a few more times and select the best output. You can also manually edit the text
+file before committing to Google Calendar.
+
+### Committing a Schedule to Google Calendar
+To commit a schedule to Google Calendar you need:
 1. A Google account
 2. Edit access to the google calendar you want to update / commit to.
-3. The Calendar ID for the google calendar you want to update / commit to. You can find this in the Calendar Settings. 
+3. The Calendar ID for the google calendar you want to update / commit to. You can find this in the Calendar Settings.
 4. A schedule file in the __exact__ format as those generated by this program (see above). That is the file should be of the form:
 ```
 <day of week> : <name> : <date in YYYY-MM-DD format>
 ```
-For example 
+For example
 ```
 thursday : John : 2018-02-15
 friday : Jill : 2018-2-16
 ```
-5. A Google Calendar API Key. (Eventually I'll try to package this so you don't have to do that, but as of now this is the best I can do.) Follow the steps here: https://developers.google.com/google-apps/calendar/quickstart/python to get your own Google Calendar API key. Make sure you move the `client.json` file to the same folder as `scheduler.py`. 
+5. A Google Calendar API Key. (Eventually I'll try to package this so you don't have to do that, but as of now
+   this is the best I can do.) Follow the steps here:
+   https://developers.google.com/google-apps/calendar/quickstart/python to get your own Google Calendar API key.
+   Make sure you move the `client.json` file to the same folder as `scheduler.py`.
+
 Once you've generated a schedule (see above) you can commit it to google calendar using:
+
 ```Bash
-	$ python scheduler.py --commit --infile schedule_file.txt 
+	$ python scheduler.py --commit --infile schedule_file.txt
 ```
+
 Or
+
 ```Bash
 	$ python scheduler.py -c -i schedule_file.txt
 ```
-The commands above will eventually prompt you to enter a Google Calendar ID. You can also enter the Google Calendar ID as a command line flag
+
+The commands above will eventually prompt you to enter a Google Calendar ID. You can also enter the Google Calendar
+ID as a command line flag
+
 ```Bash
-	$ python scheduler.py -c -i schedule_file.txt -c -cal <CALENDAR ID>
+	$ python scheduler.py -c -i schedule_file.txt -cal <CALENDAR ID>
 ```
-Where `<CALENDAR ID>` is the calendar ID copied from the Calendar Settings. 
+
+Where `<CALENDAR ID>` is the calendar ID copied from the Calendar Settings.
 
 ### Analyzing a Schedule
-If you've manually created or changed the schedule you may want to verify you still meet the RAs' preferences and that the number of weekday / weekend duties are balanced. The `analyze.py` program has a few features that will help with this. 
+If you've manually created or changed the schedule you may want to verify you still meet the RAs' preferences and that the number of weekday / weekend duties are balanced. The `analyze.py` program has a few features that will help with this.
+
 ```Bash
-	$ python analyze.py -cr -pf preferences_file.txt -sf schedule.txt
+$ python analyze.py -cr -pf preferences_file.txt -sf schedule.txt
 ```
+
 Checks that the schedule in `schedule.txt` conforms to the restrictions found in `preferences_file.txt`. If not, it will print the dates of any errors.
+
 ```Bash
-	$ python analyze.py -gs -sf schedule.txt
+$ python analyze.py -gs -sf schedule.txt
 ```
-Prints a summary of weekday / weekend duties for each RA based on the schedule in `schedule.txt`. 
-```Bash 
-	$ python analyze.py -cr -gs -pf preferences_file.txt -sf schedule.txt
+
+Prints a summary of weekday / weekend duties for each RA based on the schedule in `schedule.txt`.
+
+```Bash
+$ python analyze.py -cr -gs -pf preferences_file.txt -sf schedule.txt
 ```
-Does both of the tasks above. 
+
+Does both of the tasks above.
 
 ### Issues or Updates
-If you spot some kind of bug you can approach me directly or open an issue on github. 
+If you spot some kind of bug you can approach me directly or open an issue on github.
 
-If you'd like to make a contribution to this repo please submit a pull request. 
+If you'd like to make a contribution to this repo please submit a pull request.
 
 ### To Do
 * Look at two-back conflicts.
-* Create GUI (wxPython, flask, tkinter, etc).
-* Create option for dynamic input.
-* Abstract for more general schedules. 
+* Abstract for more general schedules.
 * Develop "best of batch" scheduling
 * Limited forward checking / edge consistency
 * Heuristic for resolving conflicts

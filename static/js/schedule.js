@@ -1,5 +1,9 @@
 let _ = require('lodash');
 
+Date.prototype.isWeekday = function() {
+    return !(this.getDay() === 5 || this.getDay() === 6)
+}
+
 function incrementDate(date) {
     const newDate = new Date(date.valueOf());
     newDate.setDate(newDate.getDate() + 1);
@@ -19,9 +23,10 @@ function createDateRange(startDate, endDate, breakStartDate, breakEndDate) {
     let numWeekdays = 0;
     let numWeekends = 0;
     for (let date = startDate; date <= endDate; date = incrementDate(date)) {
-        if (!(date >= breakStartDate && date <= breakEndDate)) {
+        if (!(breakStartDate && breakEndDate) ||
+            !(date >= breakStartDate && date <= breakEndDate)) {
             dateRange.push(date);
-            if (date.getDay() > 0 && date.getDay() < 5) {
+            if (date.isWeekday()) {
                 numWeekdays++;
             } else {
                 numWeekends++;
@@ -36,12 +41,8 @@ function createDateRange(startDate, endDate, breakStartDate, breakEndDate) {
 }
 
 function createSchedule(people, startDate, endDate, breakStartDate, breakEndDate) {
-    if (!(breakStartDate && breakEndDate)) {
-        return { schedule: {}, scheduleDateRange: [] };
-    }
-
     const scheduleInitInfo = createDateRange(startDate, endDate, breakStartDate, breakEndDate);
-
+    console.log(startDate, endDate);
     const scheduleDateRange = scheduleInitInfo.date_range;
     const totalNumWeekdays = scheduleInitInfo.num_weekdays;
     const totalNumWeekends = scheduleInitInfo.num_weekends;
@@ -62,17 +63,18 @@ function createSchedule(people, startDate, endDate, breakStartDate, breakEndDate
 
     weekdaysList = shuffle(weekdaysList);
     weekendsList = shuffle(weekendsList);
+    console.log('weekdays', totalNumWeekdays, weekdaysList.length);
+    console.log('weekends', totalNumWeekends, weekendsList.length);
 
     const schedule = {}
     let prev = '';
     scheduleDateRange.forEach((date) => {
         const day = date.getDay();
-        let lstToUse = (day != 4 && day != 5) ? weekdaysList : weekendsList;
+        let lstToUse = (date.isWeekday()) ? weekdaysList : weekendsList;
         const numLeft = lstToUse.length;
-
-        let attempts = 0;
         let roll;
         let person;
+        let attempts = 0;
         let found = false;
         while (attempts < people.length && !found) {
             roll = Math.floor(Math.random() * numLeft);
@@ -97,8 +99,17 @@ function createSchedule(people, startDate, endDate, breakStartDate, breakEndDate
 
     return {
         schedule,
-        schedule_date_range: scheduleDateRange,
+        dateRange: scheduleDateRange,
     };
 }
+
+// people = [
+//     {name: 'Haroon', daysOfWeek: [false, false, false, false, false], dates: [ new Date('1/1/2019')]},
+//     {name: 'George', daysOfWeek: [false, true, false, false, false], dates: [ new Date('1/2/2019')]}
+// ]
+
+// const sched = createSchedule(people, new Date('1/1/2019'), new Date('5/24/2019'), new Date('4/1/2019'), new Date('4/7/2019'));
+
+// console.log(sched);
 
 module.exports = { createSchedule };
