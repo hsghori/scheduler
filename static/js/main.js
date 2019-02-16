@@ -4,7 +4,6 @@ let { createForm, createScheduleRow, createAnalysisRow, DAYS } = require('./cons
 let { createSchedule } = require('./schedule');
 
 const ADD_PERSON_BUTTON = '.js-add-person-button';
-const NEW_PERSON_FORM = '.form-template';
 const FORM_CONTAINER = '.form-container';
 const DATES_TEXT = '.js-dates-text-box';
 const GENERAL_FORM = '.general-form';
@@ -17,7 +16,6 @@ const SUBMIT_BUTTON = '.js-submit-button';
 
 const SET_SCHEDULE_FORM = '.module-scheduler-form';
 const SCHEDULE_MODULE = '.module-scheduler-schedule';
-const TEMPLATE_SCHEDULE_ROW = '.schedule-template-row';
 
 
 function getPerson(form) {

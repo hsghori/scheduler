@@ -1,13 +1,11 @@
-let _ = require('lodash');
-
 Date.prototype.isWeekday = function() {
-    return !(this.getDay() === 5 || this.getDay() === 6)
+    return this.getDay() < 5;
 }
 
 function incrementDate(date) {
     const newDate = new Date(date.valueOf());
     newDate.setDate(newDate.getDate() + 1);
-    return newDate
+    return newDate;
 }
 
 function shuffle(a) {
@@ -40,9 +38,19 @@ function createDateRange(startDate, endDate, breakStartDate, breakEndDate) {
     };
 }
 
+function isValid(person, day, date, prev, prev_prev) {
+    if (person.daysOfWeek[day]) {
+        return false;
+    } else if (person.dates.includes(date)) {
+        return false;
+    } else if (prev == person.name && prev_prev == person.name) {
+        return false;
+    }
+    return true;
+}
+
 function createSchedule(people, startDate, endDate, breakStartDate, breakEndDate) {
     const scheduleInitInfo = createDateRange(startDate, endDate, breakStartDate, breakEndDate);
-    console.log(startDate, endDate);
     const scheduleDateRange = scheduleInitInfo.date_range;
     const totalNumWeekdays = scheduleInitInfo.num_weekdays;
     const totalNumWeekends = scheduleInitInfo.num_weekends;
@@ -61,12 +69,29 @@ function createSchedule(people, startDate, endDate, breakStartDate, breakEndDate
         }
     });
 
+    let i = 0;
+    while (weekdaysList.length > totalNumWeekdays) {
+        const index = weekdaysList.indexOf(people[i % people.length]);
+        if (index !== -1) {
+            weekdaysList.splice(index, 1);
+        }
+        i++;
+    }
+    let j = 0;
+    while (weekendsList.length > totalNumWeekends) {
+        const index = weekendsList.indexOf(people[i % people.length]);
+        if (index !== -1) {
+            weekendsList.splice(index, 1);
+        }
+        j++;
+    }
+
+
     weekdaysList = shuffle(weekdaysList);
     weekendsList = shuffle(weekendsList);
-    console.log('weekdays', totalNumWeekdays, weekdaysList.length);
-    console.log('weekends', totalNumWeekends, weekendsList.length);
 
     const schedule = {}
+    let prev_prev = '';
     let prev = '';
     scheduleDateRange.forEach((date) => {
         const day = date.getDay();
@@ -79,10 +104,7 @@ function createSchedule(people, startDate, endDate, breakStartDate, breakEndDate
         while (attempts < people.length && !found) {
             roll = Math.floor(Math.random() * numLeft);
             person = lstToUse[roll];
-            const isValid = !(person.daysOfWeek[day] ||
-                              person.dates.includes(date) ||
-                              prev === person.name);
-            if (isValid) {
+            if (isValid(person, day, date, prev, prev_prev)) {
                 schedule[date] = { name: person.name, is_valid: true }
                 found = true;
             }
@@ -94,6 +116,7 @@ function createSchedule(people, startDate, endDate, breakStartDate, breakEndDate
             schedule[date] = { name: person.name, is_valid: false };
         }
         lstToUse.splice(roll, 1);
+        prev_prev = prev;
         prev = person.name;
     });
 
@@ -102,14 +125,5 @@ function createSchedule(people, startDate, endDate, breakStartDate, breakEndDate
         dateRange: scheduleDateRange,
     };
 }
-
-// people = [
-//     {name: 'Haroon', daysOfWeek: [false, false, false, false, false], dates: [ new Date('1/1/2019')]},
-//     {name: 'George', daysOfWeek: [false, true, false, false, false], dates: [ new Date('1/2/2019')]}
-// ]
-
-// const sched = createSchedule(people, new Date('1/1/2019'), new Date('5/24/2019'), new Date('4/1/2019'), new Date('4/7/2019'));
-
-// console.log(sched);
 
 module.exports = { createSchedule };

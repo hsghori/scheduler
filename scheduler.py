@@ -49,10 +49,10 @@ class RA:
          unv_irregular -> the restricted specific dates
     '''
 
-    def __init__(self, name='', unv_regular=set(), unv_irregular=set()):
+    def __init__(self, name='', unv_regular=None, unv_irregular=None):
         self.name = name
-        self.unv_regular = unv_regular
-        self.unv_irregular = unv_irregular
+        self.unv_regular = unv_regular or set()
+        self.unv_irregular = unv_irregular or set()
 
     def __str__(self):
         return 'Name: %s\nDays Restriction: %s\nDates Restriction %s' % (self.name, str(self.unv_regular), str(self.unv_irregular))
@@ -60,7 +60,7 @@ class RA:
 
 class InvalidDateRangeException(Exception):
     '''
-     Exception that represents invalid date ranges. 
+     Exception that represents invalid date ranges.
      Params:
          date1 -> the start date
          date2 -> the end date
@@ -76,7 +76,7 @@ class InvalidDateRangeException(Exception):
 
 class InvalidFileFormatException(Exception):
     '''
-     Exception that represents invalid input file. 
+     Exception that represents invalid input file.
      Params:
         fn -> the filename
     '''
@@ -103,11 +103,11 @@ def get_date_obj(s):
 
 def create_gcal_even(name, date, tag=''):
     '''
-     Returns a dict event based on the given data. 
+     Returns a dict event based on the given data.
      Params:
-        name -> the name of hte event 
-        date -> a string representation of the date 
-        tag -> an optional tag to prepend to the event title. 
+        name -> the name of hte event
+        date -> a string representation of the date
+        tag -> an optional tag to prepend to the event title.
      Returns:
         a dict event based on the Google Calendar API
     '''
@@ -128,7 +128,7 @@ def create_date_range(begin_str, end_str, exclude=set()):
     '''
      Creates a list of dates from begin to end excluding the dates in the exclude list.
      Params:
-         begin_str -> a string representing the beginning of the date range 
+         begin_str -> a string representing the beginning of the date range
          end_str -> a string representing the end of the date range
          exclude -> a set of dates to exclude from the date range.
      Returns:
@@ -145,7 +145,7 @@ def create_date_range(begin_str, end_str, exclude=set()):
     while curr <= end:
         if curr not in exclude:
             ret.append(curr)
-            if curr.weekday() < 5:
+            if curr.weekday() != 4 and curr.weekday() != 5:
                 weekdays += 1
             else:
                 weekends += 1
@@ -178,13 +178,23 @@ def parse_file(infile):
                           unv_irregular=irregular))
         except Exception as e:
             print e
-            raise InvalidFileFormatException()
+            raise InvalidFileFormatException(infile)
     return ras
+
+
+def is_valid(currentDate, dayOfWeek, person, schedule):
+    if dayOfWeek in person.unv_regular:
+        return False
+    elif currentDate in person.unv_irregular:
+        return False
+    elif schedule.get(currentDate - dayiter, 'None') == person.name and schedule.get(currentDate - timedelta(2), 'None') == person.name:
+        return False
+    return True
 
 
 def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
     '''
-     Creates a duty schedule based on the data in ras a outputs to an outfile. 
+     Creates a duty schedule based on the data in ras a outputs to an outfile.
      Params:
         ras -> a list of RA objects
         outfile -> a file object to be written to
@@ -209,6 +219,15 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
             weekends_list.append(ra)
         tracker[ra.name] = [weekdays_per, weekends_per]
 
+    i, j = 0, 0
+    while len(weekdays_list) > num_weekdays:
+        weekdays_list.remove(ras[i % len(ras)])
+        i += 1
+
+    while len(weekends_list) > num_weekends:
+        weekends_list.remove(ras[j % len(ras)])
+        j += 1
+
     rand.shuffle(weekdays_list)
     rand.shuffle(weekends_list)
 
@@ -224,8 +243,7 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
         while attempts < num_ras:
             roll = rand.randint(0, N - 1)
             selected = lst[roll]
-            valid = day not in selected.unv_regular and curr not in selected.unv_irregular and schedule.get(
-                curr - dayiter, 'None') != selected.name
+            valid = is_valid(curr, day, selected, schedule)
             if valid:
                 schedule[curr] = selected.name
                 found = True
@@ -239,8 +257,7 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
         nm = lst.pop(roll).name
         tracker[nm][ind] -= 1
     for curr in duty_range:
-        outfile.write('%s : %s : %s\n' %
-                      (inverse[curr.weekday()], str(curr), schedule[curr]))
+        outfile.write('%s : %s : %s\n' % (inverse[curr.weekday()], str(curr), schedule[curr]))
     outfile.close()
     print 'Summary'
     for ra in ras:
@@ -292,9 +309,9 @@ def parse_sched_file(sched_file):
             sched[parts[1]] = parts[2]
             i += 1
         return sched
-    except Exception as e:
-        raise InvalidFileFormatException(sched_file.name)
+    except Exception:
         print 'File format error on line %d' % (i)
+        raise InvalidFileFormatException(sched_file.name)
 
 
 def commit_sched(sched, tag='', calID=''):
@@ -302,7 +319,7 @@ def commit_sched(sched, tag='', calID=''):
      Uses the Google Calendar API to commit a schedule dict to a Google Calendar.
      Params:
         sched -> a dictionary that maps string dates to names
-        tag -> an optional tag 
+        tag -> an optional tag
         calID -> the Google Calendar ID
     '''
     calID = calID if calID != '' else raw_input('Enter the calendar id for your google calendar.\n\
@@ -354,11 +371,11 @@ def run_commit(infile, staff, calID):
 
 def run_create(infile, outfile, start_date, end_date, break_start, break_end):
     '''
-     Creates a schedule based on data in infile and outptus to outfile. 
+     Creates a schedule based on data in infile and outptus to outfile.
      Params:
-        infile -> an input file handle 
-        outfile -> an output file handle 
-        start_date -> the start date for the schedule 
+        infile -> an input file handle
+        outfile -> an output file handle
+        start_date -> the start date for the schedule
         end_date -> the end date for the schedule
     '''
     ras = parse_file(infile)
