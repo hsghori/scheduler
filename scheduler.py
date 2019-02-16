@@ -185,9 +185,9 @@ def parse_file(infile):
 def is_valid(currentDate, dayOfWeek, person, schedule):
     if dayOfWeek in person.unv_regular:
         return False
-    elif currentDate  in person.unv_irregular:
+    elif currentDate in person.unv_irregular:
         return False
-    elif schedule.get(currentDate - dayiter, 'None') == person.name and schedule.get(currentDate - timedelta(2), 'None') == person.name :
+    elif schedule.get(currentDate - dayiter, 'None') == person.name and schedule.get(currentDate - timedelta(2), 'None') == person.name:
         return False
     return True
 
@@ -231,10 +231,6 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
     rand.shuffle(weekdays_list)
     rand.shuffle(weekends_list)
 
-    assert len(weekdays_list) >= num_weekdays
-    assert len(weekends_list) >= num_weekends
-    assert len(weekdays_list) + len(weekends_list) >= len(duty_range)
-
     for curr in duty_range:
         day = curr.weekday()
         if day != 4 and day != 5:  # weekday
@@ -246,7 +242,6 @@ def create_schedule(ras, outfile, start, end, break_start=None, break_end=None):
         found = False
         while attempts < num_ras:
             roll = rand.randint(0, N - 1)
-            print ind, len(lst)
             selected = lst[roll]
             valid = is_valid(curr, day, selected, schedule)
             if valid:
